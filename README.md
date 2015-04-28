@@ -1,7 +1,7 @@
 rOpenSci Onboarding
 ===================
 
-Thank you for considering submitting your package to the rOpenSci suite. In order to ensure a consistent level of software quality for our users, we ask that you go through an onboarding process so we can better understand what your software does, and how we can help improve it before adding it to our suite. This process also allows us to ensure that your package meets our guidelines and provides opportunity for discussion where exceptions are requested.
+Thank you for considering submitting your package to the rOpenSci suite. In order to ensure a consistent level of software quality for our users, we ask that you go through an onboarding process so we can better understand what your software does, and how we can help improve it before adding it to our suite. This process also allows us to ensure that your package meets our [policies](https://github.com/ropensci/policies) and [guidelines](https://github.com/ropensci/packaging_guide) and provides opportunity for discussion where exceptions are requested.
 
 ## How to begin the onboarding process
 
