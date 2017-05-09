@@ -1,10 +1,34 @@
 ---
-title: "Another Year in Reviews at rOpenSci: DRAFT ANALYTICAL PART"
+title: "Another Year in Reviews at rOpenSci: DRAFT"
 author: "Noam Ross"
 date: "1/16/2017"
 output: html_document
 ---
 
+## Part I: Changes in the Process
+
+Process: 
+-  Multiple handling editors
+-  Increased use of automation - ropensci-bot
+-  Commitment to multiple reviewers
+-  Increased use of automated tools upstream before assigning to reviewers
+    - goodpractice, covr, spellcheck
+-  Checklists for editors, reviewers, and reviewees
+-  Linkage with JOSS
+Policies:
+-  Overlap requirements
+-  Generalizability
+-   Data packages, data extraction packages (linked to our expansion of PDF and OCR tools)
+
+Different requirements:
+-  CI and coverage required
+   - Tools have gotten better, tutorials more available
+-  Awknowledging reviewers
+-  Little things
+   - Function naming
+   - First-point-of-entry documentation
+
+## Part II: The Numbers
 *Here are some initial stabs at a quantitative look at the review process,
 which will be part of my next "Year in Reviews" post.  I'll update with nicer
 styling and more text later.  For now this is just an exploration to prompt further
@@ -86,10 +110,16 @@ times <- map_df(packages, function(x) {
   data_frame(opened = x$created_at, closed = x$closed_at)
 }) %>% 
   mutate_all(funs(as.POSIXct)) %>% 
-  mutate(review_time = closed - opened)
+  mutate(review_time = round(as.numeric(difftime(closed, opened, units="weeks")/4)))
 ggplot(times, aes(x=review_time)) + 
-  geom_histogram(binwidth = 10) +
-  geom_vline(xintercept = mean(times$review_time))
+  #geom_histogram(binwidth = 1) +
+  #geom_vline(xintercept = mean(times$review_time))
+    geom_histogram(binwidth = 1, col="white") +
+  geom_text(data=data_frame(x=0:7, y=0.25), aes(x=x, y=y, label=x), col="white", family="Avenir", size=6) +
+  #scale_x_continuous(breaks=0:10) +
+  #scale_y_continuous(breaks=seq(0,14, by=2), limits=c(0,14)) +
+  theme_minimal() + theme(axis.text = element_blank(), panel.grid.minor = element_blank(),
+                          panel.grid.major = element_blank(), axis.title = element_blank(), text = element_text(family="Avenir", size = 12))
 ```
 
 Overall, review times are holding steady or going down:
@@ -103,12 +133,17 @@ more than one submittal.  Note that after a flurry
 of submissions over last spring and summer, partially driven by our power users,
 we're back down to lower rates of submission.  
 
+It's possible that the surge is seasonal - it coincides with summertime for
+many universities.  It also followed [last year's rOpenSci unconference](http://unconf16.ropensci.org/) and the surge of publicity from
+last time we did a review.
+
 ```{r submission-rate}
 submittals <- gh("/repos/ropensci/onboarding/issues?labels=package&state=all&sort=created", .limit=200)
 submits <- map_df(submittals, function(x) {
   data_frame(submitted = x$created_at,
              name = stringi::stri_extract_first_regex(x$body, "(?<=Package:\\s{0,5}).*\\b"),
-             author = x$user$login)
+             author = x$user$login,
+             editor = ifelse(!is.null(x$assignee$login), x$assignee$login, NA_character_))
 }) %>% 
   mutate(submitted = as.POSIXct(submitted))
 
@@ -120,6 +155,13 @@ submits = submits %>%
 ggplot(submits, aes(x=submitted, fill = Author)) +
   geom_histogram(binwidth = as.numeric(lubridate::days(90))) +
   scale_x_datetime(date_breaks = "90 days", date_labels = "%b %y") +
+  scale_y_continuous(breaks = seq(0, 16, by=2), limits = c(0, 13), expand = c(0,0)) +
+  scale_fill_brewer(type = "qual") +
+  theme(axis.text.x = element_text(angle = 45, margin =margin(t=10)))
+
+ggplot(submits, aes(x=submitted, fill = editor)) +
+  geom_histogram(binwidth = as.numeric(lubridate::days(90))) +
+  scale_x_datetime(date_breaks = "3 months", date_labels = "%b %y") +
   scale_y_continuous(breaks = seq(0, 16, by=2), limits = c(0, 13), expand = c(0,0)) +
   scale_fill_brewer(type = "qual") +
   theme(axis.text.x = element_text(angle = 45, margin =margin(t=10)))
@@ -135,6 +177,22 @@ The reported time it takes to review remains similar.  The median time reported
 to complete a review is `r median(reviews$review_hours, na.rm=TRUE)` hours.
 
 ```{r review-hours}
-ggplot(reviews, aes(x=review_hours)) + geom_histogram(binwidth = 1)
+ggplot(reviews, aes(x=round(review_hours))) +
+  geom_histogram(binwidth = 1, col="white") +
+  geom_text(data=data_frame(x=0:14, y=0.5), aes(x=x, y=y, label=x), col="white", family="Avenir", size=6) +
+  #scale_x_continuous(breaks=0:10) +
+  #scale_y_continuous(breaks=seq(0,14, by=2), limits=c(0,14)) +
+  theme_minimal() + theme(axis.text = element_blank(), panel.grid.minor = element_blank(),
+                          panel.grid.major = element_blank(), axis.title = element_blank(), text = element_text(family="Avenir", size = 12))
 ```
 
+More potential analysis:
+
+- Number of reviewers per package over time.
+
+# Part III: What's next
+
+-   More automation!
+-   Outreach to other groups.  If you run or hope to run a similar group, we'd
+    be glad to work with you to adopt some or all of our process
+-   Scaling down to analyses, not just packages.  
