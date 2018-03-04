@@ -2,5 +2,5 @@
 
 # Source files
 # ============
-*.css linguist-language=r
-*.html linguist-language=r
+*.Rmd linguist-language=r
+*.md linguist-language=r
